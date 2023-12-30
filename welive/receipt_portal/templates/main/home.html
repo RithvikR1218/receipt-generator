@@ -5,14 +5,26 @@
     <div class="container-lg">
         {% block content%} <h1>Home Page</h1> {% endblock%}
     </div>
+    <div class="container-lg">
+        <h2>File Upload</h2>
+    </div>
     <div class="mt-10 container-sm">
         <form method="post" enctype="multipart/form-data">
             {% csrf_token%} {{ form | crispy }}
             <input type="file" name="myfile">
             <button type="submit">Upload</button>
         </form>
-    {% if uploaded_file_url %}
-    <p>File uploaded at: <a href="{{ uploaded_file_url }}">{{ uploaded_file_url }}</a></p>
-    {% endif %}
+    </div>
+    <div class="container-lg">
+        <h2>Receipt Generator</h2>
+        <div class="form-floating">
+            <select class="form-select" id="floatingSelect" aria-label="Floating label select example">
+            <option selected>Choose File</option>
+            {% for file in test %}
+                <option>{{file}}</option>
+            {% endfor %}
+            </select>
+            <label for="floatingSelect">Donations:</label>
+          </div>
     </div>
 {% endblock %}
