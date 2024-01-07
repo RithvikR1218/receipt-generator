@@ -7,5 +7,6 @@ urlpatterns = [
     path('home',views.home,name='home'),
     path('hello/',views.say_hello),
     path('receipt/',views.generate_receipt),
-    path('upload_file/',views.upload_file)
+    path('upload_file/',views.upload_file),
+    path('email/',views.send_email)
 ]

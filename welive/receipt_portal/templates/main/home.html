@@ -33,4 +33,22 @@
         </form>
     </div>
 
+    <div class="mt-10 container-sm">
+        <h2>Send Email</h2>
+        <form method="post" action="email/" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ form|crispy }}
+            <div class="form-floating">
+                <select class="form-select" id="test" name="selected_directory" aria-label="Floating label select example">
+                    <option selected>Choose Directory to send</option>
+                    {% for directory in receipts %}
+                        <option>{{ directory }}</option>
+                    {% endfor %}
+                </select>
+                <label for="floatingSelect">Directory:</label>
+            </div>
+            <button type="submit" class="btn btn-success">Submit</button>
+        </form>
+    </div>
+
 {% endblock %}
