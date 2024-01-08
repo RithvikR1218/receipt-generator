@@ -8,6 +8,7 @@
     <div class="container-lg">
         <h2>File Upload</h2>
     </div>
+    {% comment %} Fix file upload css {% endcomment %}
     <div class="mt-10 container-sm">
         <form method="post" action="upload_file/" enctype="multipart/form-data">
             {% csrf_token%} {{ form | crispy }}
@@ -17,7 +18,7 @@
     </div>
     <div class="mt-10 container-sm">
         <h2>Generate Receipt</h2>
-        <form method="post" action="receipt/" enctype="multipart/form-data">
+        <form method="post" action="api/receipt/" enctype="multipart/form-data">
             {% csrf_token %}
             {{ form|crispy }}
             <div class="form-floating">
@@ -33,9 +34,10 @@
         </form>
     </div>
 
+    {% comment %} Are you sure scrren {% endcomment %}
     <div class="mt-10 container-sm">
         <h2>Send Email</h2>
-        <form method="post" action="email/" enctype="multipart/form-data">
+        <form method="post" action="api/email/" enctype="multipart/form-data">
             {% csrf_token %}
             {{ form|crispy }}
             <div class="form-floating">

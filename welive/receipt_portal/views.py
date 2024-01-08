@@ -3,6 +3,7 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
+from receipt_portal.models import Email
 from docxtpl import DocxTemplate
 import pandas as pd
 import os
@@ -39,22 +40,19 @@ def generate_receipt(request):
     file = request.POST.get("selected_file")
     stripped_file = os.path.splitext(file)[0]
     os.mkdir("media/" + "receipts/" + stripped_file)
+    
     #Add error checking for uploaded file format
     values = pd.read_excel("media/" + file)
     slot_no = values["S No"]
-    names = values["Name of the Donor"]
-    amount = values["Donation Amount	"]
-    address = values["Address"]
-    date = values["Donation Date"]
-    pan = values["PAN No."]
-    #Create receipt directory if needed
+    
+    #Create receipt directory if not found
     doc = DocxTemplate("/home/rithvik/WeLive/welive/media/format/Receipt_Format-4.docx")
     for i in range(len(slot_no)):
-        context = { 'donar_name' : names[i],
-                    'donor_address': address[i],
-                    'donor_pan': pan[i],
-                    'donation_amount': amount[i],
-                    'date': date[i],
+        context = { 'donar_name' : values["Name of the Donor"][i],
+                    'donor_address': values["Address"][i],
+                    'donor_pan': values["PAN No."][i],
+                    'donation_amount': values["Donation Amount	"][i],
+                    'date': values["Donation Date"][i],
                     'receipt_no': slot_no[i]}
         doc.render(context)
         final_path = "media/receipts/" + stripped_file + "/" + str(slot_no[i]) + "_receipt.docx"
@@ -67,7 +65,8 @@ def generate_receipt(request):
 
 def upload_file(request):
     #Logic for uploading files
-    #Create format directoy if needed
+    #Make a delete file button and option
+    #Create format directory to upload the template
     myfile = request.FILES['myfile']
     fs = FileSystemStorage()
     filename = fs.save(myfile.name, myfile)
@@ -77,27 +76,21 @@ def send_email(request):
     dir = request.POST.get("selected_directory")
     
     values = pd.read_excel("media/" + dir + ".xlsx")
-    
     slot_no = values["S No"]
     emails = values["Email Address"]
 
-    #Use sqlite and model to set the email
-    password = "rkxr vgfs eecb yxyz"
+    #Email details
+    email_details = Email.objects.all()
+    body = MIMEText(email_details[0].body) # convert the body to a MIME compatible string
+    subject = email_details[0].subject
+    sender = email_details[0].sender
+    password = email_details[0].app_password
     
-    body = "This is the body of the text message"
-    body = MIMEText(body) # convert the body to a MIME compatible string
-    
-    subject = "Email Subject"
-    
-    sender = "rithvik.ravilla@gmail.com"
-    
-    #Optimize the recepients bs
     for i in range(len(slot_no)):
         msg = MIMEMultipart()
         msg.attach(body)
         msg['Subject'] = subject
         msg['From'] = sender
-    
         msg['To'] = emails[i]
         pdf = "media/receipts/" + dir + "/" + str(slot_no[i]) + "_receipt.pdf"
         
