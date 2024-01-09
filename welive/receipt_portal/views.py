@@ -9,6 +9,7 @@ import pandas as pd
 import os
 import glob
 import smtplib
+import shutil
 from email.mime.multipart import MIMEMultipart
 from email.mime.application import MIMEApplication
 from email.mime.text import MIMEText
@@ -62,6 +63,11 @@ def generate_receipt(request):
         os.system("rm " + str(final_path))
     os.system("mv *.pdf media/receipts/" + stripped_file)
     return HttpResponseRedirect(reverse("home"))
+
+def delete_receipt(request):
+    file = request.POST.get("selected_file")
+    stripped_file = os.path.splitext(file)[0]
+    shutil.rmtree("media/" + "receipts/" + stripped_file)
 
 def upload_file(request):
     #Logic for uploading files

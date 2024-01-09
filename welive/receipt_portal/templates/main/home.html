@@ -1,4 +1,5 @@
 {% extends 'main/base.html' %}
+{% load static %}
 {% load crispy_forms_tags%}
 {% block title%}Home Page{% endblock %}
 {% block contenttag %}
@@ -18,7 +19,7 @@
     </div>
     <div class="mt-10 container-sm">
         <h2>Generate Receipt</h2>
-        <form method="post" action="api/receipt/" enctype="multipart/form-data">
+        <form method="post" action="api/receipt/generate" enctype="multipart/form-data">
             {% csrf_token %}
             {{ form|crispy }}
             <div class="form-floating">
@@ -34,7 +35,10 @@
         </form>
     </div>
 
-    {% comment %} Are you sure scrren {% endcomment %}
+    <script src="{% static 'js/main.js' %}"></script>
+    <button onclick="greet('John')">Say Hello</button>
+    
+    {% comment %} Are you sure pop up {% endcomment %}
     <div class="mt-10 container-sm">
         <h2>Send Email</h2>
         <form method="post" action="api/email/" enctype="multipart/form-data">
