@@ -70,7 +70,6 @@ def delete_receipt(request):
     shutil.rmtree("media/" + "receipts/" + stripped_file)
 
 def upload_file(request):
-    #Logic for uploading files
     #Make a delete file button and option
     #Create format directory to upload the template
     myfile = request.FILES['myfile']
@@ -93,22 +92,21 @@ def send_email(request):
     password = email_details[0].app_password
     
     for i in range(len(slot_no)):
-        if i < 1:
-            msg = MIMEMultipart()
-            msg.attach(body)
-            msg['Subject'] = subject
-            msg['From'] = sender
-            msg['To'] = emails[i]
-            pdf = "media/receipts/" + dir + "/" + str(slot_no[i]) + "_receipt.pdf"
-            
-            with open(pdf, "rb") as pdf_file:
-                pdf_attachment = MIMEApplication(pdf_file.read())
-                pdf_attachment.add_header('Content-Disposition', 'attachment', filename= str(slot_no[i]) + "_receipt.pdf")
-                msg.attach(pdf_attachment)
+        msg = MIMEMultipart()
+        msg.attach(body)
+        msg['Subject'] = subject
+        msg['From'] = sender
+        msg['To'] = emails[i]
+        pdf = "media/receipts/" + dir + "/" + str(slot_no[i]) + "_receipt.pdf"
+        
+        with open(pdf, "rb") as pdf_file:
+            pdf_attachment = MIMEApplication(pdf_file.read())
+            pdf_attachment.add_header('Content-Disposition', 'attachment', filename= str(slot_no[i]) + "_receipt.pdf")
+            msg.attach(pdf_attachment)
 
-            with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp_server:
-                smtp_server.login(sender, password)
-                smtp_server.sendmail(sender, emails[i], msg.as_string())
+        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp_server:
+            smtp_server.login(sender, password)
+            smtp_server.sendmail(sender, emails[i], msg.as_string())
     
     return HttpResponseRedirect(reverse("home"))
     
