@@ -3,58 +3,83 @@
 {% load crispy_forms_tags%}
 {% block title%}Home Page{% endblock %}
 {% block contenttag %}
-    <div class="container-lg">
-        {% block content%} <h1>Home Page</h1> {% endblock%}
-    </div>
-    <div class="container-lg">
-        <h2>File Upload</h2>
-    </div>
-    {% comment %} Fix file upload css {% endcomment %}
-    <div class="mt-10 container-sm">
-        <form method="post" action="upload_file/" enctype="multipart/form-data">
-            {% csrf_token%} {{ form | crispy }}
-            <input type="file" name="myfile">
-            <button type="submit">Upload</button>
-        </form>
-    </div>
-    <div class="mt-10 container-sm">
-        <h2>Generate Receipt</h2>
-        <form method="post" action="api/receipt/generate" enctype="multipart/form-data">
-            {% csrf_token %}
-            {{ form|crispy }}
-            <div class="form-floating">
-                <select class="form-select" id="floatingSelect" name="selected_file" aria-label="Floating label select example">
-                    <option selected>Choose File</option>
-                    {% for file in uploaded_files %}
-                        <option>{{ file }}</option>
-                    {% endfor %}
-                </select>
-                <label for="floatingSelect">Donations:</label>
-            </div>
-            <button type="submit" class="btn btn-success">Submit</button>
-        </form>
+    <div class="container-lg mb-4">
+        {% block content%}
+            <h1>Home Page</h1>
+        {% endblock %}
     </div>
 
-    <script src="{% static 'js/main.js' %}"></script>
-    <button onclick="greet('John')">Say Hello</button>
-    
-    {% comment %} Are you sure pop up {% endcomment %}
-    <div class="mt-10 container-sm">
-        <h2>Send Email</h2>
-        <form method="post" action="api/email/" enctype="multipart/form-data">
-            {% csrf_token %}
-            {{ form|crispy }}
-            <div class="form-floating">
-                <select class="form-select" id="test" name="selected_directory" aria-label="Floating label select example">
-                    <option selected>Choose Directory to send</option>
-                    {% for directory in receipts %}
-                        <option>{{ directory }}</option>
-                    {% endfor %}
-                </select>
-                <label for="floatingSelect">Directory:</label>
+    <div class="container-lg mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h2>File Upload</h2>
             </div>
-            <button type="submit" class="btn btn-success">Submit</button>
-        </form>
+            <div class="card-body">
+                <form method="post" action="upload_file/" enctype="multipart/form-data">
+                    {% csrf_token%} {{ form | crispy }}
+                    <input class="form-control" type="file" name="myfile">
+                    <button type="submit" class="btn btn-success mt-2">Upload</button>
+                </form>
+            </div>
+        </div>
     </div>
+    
+
+    <div class="mt-10 container-sm mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h2>Generate Receipt</h2>
+            </div>
+            <div class="card-body">
+                <form method="post" action="api/receipt/generate" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {{ form|crispy }}
+                    <div class="form-floating">
+                        <select class="form-select" id="floatingSelect" name="selected_file" aria-label="Floating label select example">
+                            <option selected>Choose File</option>
+                            {% for file in uploaded_files %}
+                                <option>{{ file }}</option>
+                            {% endfor %}
+                        </select>
+                        <label for="floatingSelect">Donations:</label>
+                    </div>
+                    <button type="submit" class="btn btn-success mt-2">Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+
+    <script>
+        function confirmAction() {
+            var confirmed = confirm("Are you sure you want to send email?");
+            return confirmed;
+        }
+    </script>
+    
+    <div class="mt-10 container-sm mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h2>Send Email</h2>
+            </div>
+            <div class="card-body">
+                <form method="post" action="api/email/" onsubmit="return confirmAction();" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {{ form|crispy }}
+                    <div class="form-floating">
+                        <select class="form-select" id="test" name="selected_directory" aria-label="Floating label select example">
+                            <option selected>Choose Directory to send</option>
+                            {% for directory in receipts %}
+                                <option>{{ directory }}</option>
+                            {% endfor %}
+                        </select>
+                        <label for="floatingSelect">Directory:</label>
+                    </div>
+                    <button type="submit" class="btn btn-success mt-2">Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
 
 {% endblock %}
