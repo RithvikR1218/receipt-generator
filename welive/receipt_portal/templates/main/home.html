@@ -3,6 +3,8 @@
 {% load crispy_forms_tags%}
 {% block title%}Home Page{% endblock %}
 {% block contenttag %}
+
+    <script src="{% static '/js/main.js' %}"></script>   
     <div class="container-lg mb-4">
         {% block content%}
             <h1>Home Page</h1>
@@ -23,39 +25,34 @@
             </div>
         </div>
     </div>
-    
-
+      
     <div class="mt-10 container-sm mb-4">
         <div class="card">
             <div class="card-header">
                 <h2>Generate Receipt</h2>
             </div>
             <div class="card-body">
-                <form method="post" action="api/receipt/generate" enctype="multipart/form-data">
+                <form enctype="multipart/form-data">
                     {% csrf_token %}
                     {{ form|crispy }}
                     <div class="form-floating">
-                        <select class="form-select" id="floatingSelect" name="selected_file" aria-label="Floating label select example">
-                            <option selected>Choose File</option>
+                        <select class="form-select" id="generate_select" aria-label="Floating label select example">
+                            <option hidden selected>Choose File to Generate receipts</option>
                             {% for file in uploaded_files %}
                                 <option>{{ file }}</option>
                             {% endfor %}
                         </select>
-                        <label for="floatingSelect">Donations:</label>
+                        <label for="floatingSelect">Receipts:</label>
                     </div>
-                    <button type="submit" class="btn btn-success mt-2">Submit</button>
+                    <button id="generate_submit" type="button" class="btn btn-success mt-2">Submit</button>
+                    <button id="generate_delete" type="button" class="btn btn-danger mt-2">Delete</button>
                 </form>
+                <div class="d-flex justify-content-center">
+                    <div id="generate_loader" class="spinner-border" role="status" hidden="hidden"></div>
+                </div>
             </div>
         </div>
     </div>
-    
-
-    <script>
-        function confirmAction() {
-            var confirmed = confirm("Are you sure you want to send email?");
-            return confirmed;
-        }
-    </script>
     
     <div class="mt-10 container-sm mb-4">
         <div class="card">
@@ -63,23 +60,25 @@
                 <h2>Send Email</h2>
             </div>
             <div class="card-body">
-                <form method="post" action="api/email/" onsubmit="return confirmAction();" enctype="multipart/form-data">
+                <form enctype="multipart/form-data">
                     {% csrf_token %}
                     {{ form|crispy }}
                     <div class="form-floating">
-                        <select class="form-select" id="test" name="selected_directory" aria-label="Floating label select example">
-                            <option selected>Choose Directory to send</option>
+                        <select class="form-select" id="email_select" aria-label="Floating label select example">
+                            <option hidden selected>Choose Directory to Send</option>
                             {% for directory in receipts %}
                                 <option>{{ directory }}</option>
                             {% endfor %}
                         </select>
-                        <label for="floatingSelect">Directory:</label>
+                        <label for="floatingSelect">Email:</label>
                     </div>
-                    <button type="submit" class="btn btn-success mt-2">Submit</button>
+                    <button id="email_submit" type="button" class="btn btn-success mt-2">Submit</button>
                 </form>
+                <div class="d-flex justify-content-center">
+                    <div id="email_loader" class="spinner-border" role="status" hidden="hidden"></div>
+                </div>
             </div>
         </div>
     </div>
-    
 
 {% endblock %}

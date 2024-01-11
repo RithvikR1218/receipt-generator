@@ -1,7 +1,6 @@
 window.addEventListener("DOMContentLoaded", (event) => {
     const ele = document.getElementById('generate_submit');
     if (ele) {
-
         const spinner = document.getElementById('generate_loader')
         ele.addEventListener('click', function() {
             spinner.removeAttribute('hidden')
@@ -27,11 +26,44 @@ window.addEventListener("DOMContentLoaded", (event) => {
             .then(data => {
                 console.log(data.message);
                 spinner.setAttribute('hidden',"hidden")
+                window.location.reload();
             })
         }) 
     }
-    else {
-        console.log("Fuck")
+});
+
+
+window.addEventListener("DOMContentLoaded", (event) => {
+    const elem = document.getElementById('generate_delete');
+    if (elem) {
+        const spinner = document.getElementById('generate_loader')
+        elem.addEventListener('click', function() {
+            var option = generate_select.value
+            if (option == "Choose File to Generate receipts") {
+                alert("Choose a Valid File")
+                return
+            }
+            fetch('/api/receipt/delete/' + option, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('');
+                }
+                return response.json()
+            })
+            .then(data => {
+                console.log(data.message);
+                window.location.reload();
+            })
+            .catch(error => {
+                alert('Error: File not found');
+            });
+        }) 
     }
 });
 
@@ -67,6 +99,7 @@ window.addEventListener("DOMContentLoaded", (event) => {
             .then(data => {
                 console.log(data.message);
                 spinner.setAttribute('hidden',"hidden")
+                window.location.reload();
             })
         })
     }

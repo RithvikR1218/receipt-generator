@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.http import HttpResponseRedirect
+from django.http import JsonResponse
 from django.urls import reverse
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
@@ -17,7 +18,7 @@ from email.mime.text import MIMEText
 import pythoncom
 
 
-# Create your views here.
+# Used for testing values.
 def say_hello(request):
     return render(request,'hello.html',{'Name':'Rithvik'})
 
@@ -26,10 +27,10 @@ def home(request):
         return HttpResponseRedirect(reverse("login")) #redirect to login page
     else:
         
-        directory = settings.MEDIA_ROOT + "\\"
-        files = glob.glob(settings.MEDIA_ROOT+"\*")
+        directory = os.path.join(settings.MEDIA_ROOT,"upload\\")
+        files = glob.glob(os.path.join(settings.MEDIA_ROOT,"upload\*"))
         file_options = [file.replace(directory, '') for file in files if os.path.isfile(file)]
-        
+
         receipt_dir = os.path.join(settings.MEDIA_ROOT,"pdf\\")
         receipts = glob.glob(os.path.join(settings.MEDIA_ROOT,"pdf\*"))
         directory_options = [receipt.replace(receipt_dir, '') for receipt in receipts if os.path.isdir(receipt)]
@@ -39,14 +40,14 @@ def home(request):
                 'receipts': directory_options
             })
 
-def generate_receipt(request):
-    file = request.POST.get("selected_file")
+def generate_receipt(request,file):
+
     stripped_file = os.path.splitext(file)[0]
     input_directory = os.path.join(settings.MEDIA_ROOT, "word_docs", str(stripped_file))
     os.makedirs(input_directory, exist_ok=True)
     
     #Add error checking for uploaded file format
-    file_path = os.path.join(settings.MEDIA_ROOT,file)
+    file_path = os.path.join(settings.MEDIA_ROOT,"upload",file)
     values = pd.read_excel(file_path)
     slot_no = values["S No"]
     
@@ -57,7 +58,8 @@ def generate_receipt(request):
                     'donor_pan': values["PAN No."][i],
                     'donation_amount': values["Donation Amount	"][i],
                     'date': values["Donation Date"][i],
-                    'receipt_no': slot_no[i]}
+                    'receipt_no': values["Receipt No."][i]
+                    }
         doc.render(context)
         final_path=  os.path.join(settings.MEDIA_ROOT,"word_docs",stripped_file,str(slot_no[i]) + "_receipt.docx")
         doc.save(final_path)
@@ -68,25 +70,48 @@ def generate_receipt(request):
     #pythoncom to give python access to word
     pythoncom.CoInitialize()
     convert(input_directory,output_dir)
-    return HttpResponseRedirect(reverse("home"))
+    return JsonResponse({'message':'Receipts generated successfully'})
 
-def delete_receipt(request):
-    file = request.POST.get("selected_file")
-    stripped_file = os.path.splitext(file)[0]
-    shutil.rmtree("media/" + "receipts/" + stripped_file)
+def delete_receipt(request,file):
+    try:
+        stripped_file = os.path.splitext(file)[0]
+        pdf_path = os.path.join(settings.MEDIA_ROOT, "pdf", stripped_file)
+        word_docs_path = os.path.join(settings.MEDIA_ROOT, "word_docs", stripped_file)
+
+        if not (os.path.exists(pdf_path) or os.path.exists(word_docs_path)):
+            raise FileNotFoundError(f"File not found: {file}")
+        
+        shutil.rmtree(pdf_path)
+        shutil.rmtree(word_docs_path)
+        return JsonResponse({'message': 'Receipts deleted successfully'})
+
+    except FileNotFoundError as e:
+        return JsonResponse({'error': 'Directory not Found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
 
 def upload_file(request):
-    #Make a delete file button and option
-    #Create format directory to upload the template
-    myfile = request.FILES['myfile']
-    fs = FileSystemStorage()
-    filename = fs.save(myfile.name, myfile)
-    return HttpResponseRedirect(reverse("home"))
+        if request.method == 'POST' and 'myfile' in request.FILES:
+            myfile = request.FILES['myfile']
 
-def send_email(request):
-    dir = request.POST.get("selected_directory")
+            # Save the file to the initial directory (/media)
+            fs = FileSystemStorage()
+            fs.save(myfile.name, myfile)
+
+            # Define the destination directory (/media/upload)
+            destination_directory = os.path.join(settings.MEDIA_ROOT, 'upload')
+            os.makedirs(destination_directory, exist_ok=True)
+
+            # Moving the path from old location to new one
+            uploaded_file_path = os.path.join(settings.MEDIA_ROOT,myfile.name)
+            destination_file_path = os.path.join(destination_directory,myfile.name)
+            os.rename(uploaded_file_path, destination_file_path)
+
+            return HttpResponseRedirect(reverse("home"))
+
+def send_email(request,dir):
     
-    values = pd.read_excel(os.path.join(settings.MEDIA_ROOT, dir + ".xlsx"))
+    values = pd.read_excel(os.path.join(settings.MEDIA_ROOT,"upload",dir + ".xlsx"))
     slot_no = values["S No"]
     emails = values["Email Address"]
 
@@ -98,6 +123,8 @@ def send_email(request):
     password = email_details[0].app_password
     
     for i in range(len(slot_no)):
+        if i == 1:
+            return JsonResponse({'message':'Email sent successfully'})
         msg = MIMEMultipart()
         msg.attach(body)
         msg['Subject'] = subject
@@ -112,6 +139,6 @@ def send_email(request):
         with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp_server:
             smtp_server.login(sender, password)
             smtp_server.sendmail(sender, emails[i], msg.as_string())
-    
-    return HttpResponseRedirect(reverse("home"))
+    return JsonResponse({'message':'Email sent successfully'})
+
     
