@@ -19,7 +19,7 @@ window.addEventListener("DOMContentLoaded", (event) => {
             })
             .then(response => {
                 if (!response.ok) {
-                    throw new Error('Network response was not ok');
+                    return response.json().then(text => { throw new Error(text.error) })
                 }
                 return response.json()
             })
@@ -52,7 +52,7 @@ window.addEventListener("DOMContentLoaded", (event) => {
             })
             .then(response => {
                 if (!response.ok) {
-                    throw new Error('');
+                    return response.json().then(text => { throw new Error(text.error) })
                 }
                 return response.json()
             })
@@ -61,7 +61,7 @@ window.addEventListener("DOMContentLoaded", (event) => {
                 window.location.reload();
             })
             .catch(error => {
-                alert('Error: File not found');
+                alert(error);
             });
         }) 
     }
@@ -92,7 +92,7 @@ window.addEventListener("DOMContentLoaded", (event) => {
             })
             .then(response => {
                 if (!response.ok) {
-                    throw new Error('Network response was not ok');
+                    return response.json().then(text => { throw new Error(text.error) })
                 }
                 return response.json()
             })
@@ -101,6 +101,42 @@ window.addEventListener("DOMContentLoaded", (event) => {
                 spinner.setAttribute('hidden',"hidden")
                 window.location.reload();
             })
+            .catch(error => {
+                alert(error);
+            });
         })
+    }
+});
+
+window.addEventListener("DOMContentLoaded", (event) => {
+    const elem = document.getElementById('upload_submit');
+    if (elem) {
+        elem.addEventListener('click', function() {
+            var fileInput = document.getElementById('upload_file');
+            // Create FormData object and append the file
+            var formData = new FormData();
+            formData.append('uploaded_file', fileInput.files[0]);
+
+            fetch('/upload_file/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(text => { throw new Error(text.error) })
+                }
+                return response.json()
+            })
+            .then(data => {
+                console.log(data.message);
+                window.location.reload();
+            })
+            .catch(error => {
+                alert(error);
+            });
+        }) 
     }
 });

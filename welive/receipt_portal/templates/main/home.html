@@ -17,10 +17,10 @@
                 <h2>File Upload</h2>
             </div>
             <div class="card-body">
-                <form method="post" action="upload_file/" enctype="multipart/form-data">
+                <form enctype="multipart/form-data">
                     {% csrf_token%} {{ form | crispy }}
-                    <input class="form-control" type="file" name="myfile">
-                    <button type="submit" class="btn btn-success mt-2">Upload</button>
+                    <input id="upload_file" class="form-control" type="file" name="myfile">
+                    <button id="upload_submit" type="button" class="btn btn-success mt-2">Upload</button>
                 </form>
             </div>
         </div>
