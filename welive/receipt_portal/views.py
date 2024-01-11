@@ -27,6 +27,7 @@ def home(request):
     if not request.user.is_authenticated: #if the user is not authenticated
         return HttpResponseRedirect(reverse("login")) #redirect to login page
     else:
+        #Keeping the receipt dir and uploaded option as context
         directory = os.path.join(settings.MEDIA_ROOT,"upload\\")
         files = glob.glob(os.path.join(settings.MEDIA_ROOT,"upload\*"))
         file_options = [file.replace(directory, '') for file in files if os.path.isfile(file)]
@@ -42,18 +43,20 @@ def home(request):
 
 def generate_receipt(request,file):
     try:
+        #Removing the extension and checking if pdf and word_doc directory exists
         stripped_file = os.path.splitext(file)[0]
         input_directory = os.path.join(settings.MEDIA_ROOT, "word_docs", str(stripped_file))
         os.makedirs(input_directory, exist_ok=True)
         
-        #Add error checking for uploaded file format
+        #Reading the excel sheet for creating receipts
         file_path = os.path.join(settings.MEDIA_ROOT,"upload",file)
         values = pd.read_excel(file_path)
         slot_no = values["S No"]
         
+        #Setting the receipt details
         doc = DocxTemplate(os.path.join(settings.MEDIA_ROOT,"format","Receipt_Format-4.docx"))
         for i in range(len(slot_no)):
-            context = { 'donar_name' : values["Name of the Donor"][i],
+            context = { 'donor_name' : values["Name of the Donor"][i],
                         'donor_address': values["Address"][i],
                         'donor_pan': values["PAN No."][i],
                         'donation_amount': values["Donation Amount	"][i],
@@ -77,6 +80,7 @@ def generate_receipt(request,file):
 
 def delete_receipt(request,file):
     try:
+        #Checkinf if the receipts exist or not
         stripped_file = os.path.splitext(file)[0]
         pdf_path = os.path.join(settings.MEDIA_ROOT, "pdf", stripped_file)
         word_docs_path = os.path.join(settings.MEDIA_ROOT, "word_docs", stripped_file)
@@ -84,6 +88,7 @@ def delete_receipt(request,file):
         if not (os.path.exists(pdf_path) or os.path.exists(word_docs_path)):
             raise FileNotFoundError(f"File not found: {file}")
         
+        #Recursively deleting them
         shutil.rmtree(pdf_path)
         shutil.rmtree(word_docs_path)
         return JsonResponse({'message': 'Receipts deleted successfully'})
@@ -96,8 +101,9 @@ def delete_receipt(request,file):
 def upload_file(request):
     try:
         myfile = request.FILES['uploaded_file']
-
-        # Save the file to the initial directory (/media)
+        if (os.path.exists(os.path.join(settings.MEDIA_ROOT,"upload",myfile.name))):
+            raise FileExistsError
+        # Save the file to the media directory
         fs = FileSystemStorage()
         fs.save(myfile.name, myfile)
 
@@ -117,6 +123,7 @@ def upload_file(request):
 
 def send_email(request,dir):
     try:
+        #Getting values from excel doc
         values = pd.read_excel(os.path.join(settings.MEDIA_ROOT,"upload",dir + ".xlsx"))
         slot_no = values["S No"]
         emails = values["Email Address"]
@@ -129,23 +136,28 @@ def send_email(request,dir):
         password = email_details[0].app_password
         
         for i in range(len(slot_no)):
-            if i == 1:
-                return JsonResponse({'message':'Email sent successfully'})
+            # if i == 1:
+            #     return JsonResponse({'message':'Email sent successfully'})
+            
+            #Adding the email details
             msg = MIMEMultipart()
             msg.attach(body)
             msg['Subject'] = subject
             msg['From'] = sender
             msg['To'] = emails[i]
             pdf = os.path.join(settings.MEDIA_ROOT,"pdf",dir,str(slot_no[i]) + "_receipt.pdf")
+            
+            #Adding the file to the email
             with open(pdf, "rb") as pdf_file:
                 pdf_attachment = MIMEApplication(pdf_file.read())
                 pdf_attachment.add_header('Content-Disposition', 'attachment', filename= str(slot_no[i]) + "_receipt.pdf")
                 msg.attach(pdf_attachment)
-
+            
+            #Sedning email to gmail smtp server
             with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp_server:
                 smtp_server.login(sender, password)
                 smtp_server.sendmail(sender, emails[i], msg.as_string())
-                
+
         return JsonResponse({'message':'Email sent successfully'})
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)

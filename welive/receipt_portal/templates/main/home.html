@@ -19,7 +19,7 @@
             <div class="card-body">
                 <form enctype="multipart/form-data">
                     {% csrf_token%} {{ form | crispy }}
-                    <input id="upload_file" class="form-control" type="file" name="myfile">
+                    <input id="upload_file" class="form-control" type="file">
                     <button id="upload_submit" type="button" class="btn btn-success mt-2">Upload</button>
                 </form>
             </div>

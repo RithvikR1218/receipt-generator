@@ -1,3 +1,4 @@
+// receipt generator button
 window.addEventListener("DOMContentLoaded", (event) => {
     const ele = document.getElementById('generate_submit');
     if (ele) {
@@ -32,7 +33,7 @@ window.addEventListener("DOMContentLoaded", (event) => {
     }
 });
 
-
+// receipt deleter button
 window.addEventListener("DOMContentLoaded", (event) => {
     const elem = document.getElementById('generate_delete');
     if (elem) {
@@ -67,6 +68,7 @@ window.addEventListener("DOMContentLoaded", (event) => {
     }
 });
 
+// Sending email button
 window.addEventListener("DOMContentLoaded", (event) => {
     const el = document.getElementById('email_submit');
     if (el) {
@@ -108,6 +110,7 @@ window.addEventListener("DOMContentLoaded", (event) => {
     }
 });
 
+//Uploading file button
 window.addEventListener("DOMContentLoaded", (event) => {
     const elem = document.getElementById('upload_submit');
     if (elem) {
@@ -116,8 +119,7 @@ window.addEventListener("DOMContentLoaded", (event) => {
             // Create FormData object and append the file
             var formData = new FormData();
             formData.append('uploaded_file', fileInput.files[0]);
-
-            fetch('/upload_file/', {
+            fetch('/api/file/upload/', {
                 method: 'POST',
                 headers: {
                     'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
