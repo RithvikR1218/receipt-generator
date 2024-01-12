@@ -1,9 +1,11 @@
 # Installation:
+- Install python3
 - Setup venv if required
 - pip -r requirements.txt
 - cd .\welive
 - python manage.py runserver
-- Run the setup.bat file on windows
+- Configure setup.bat for the file location 
+- Run setup.bat file 
 
 # Configuration:
 - In admin panel go to email model
